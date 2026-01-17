@@ -1,0 +1,3 @@
+{"id":"389a92ba-06e8-4a31-a894-f4cc26a5539b","at":"2026-01-17T09:23:24Z","kind":"note","tags":["debug","setup"],"message":"Today I fixed Ruby 4.0 ostruct/rdoc and ran the project successfully","meta":{}}
+{"id":"e462d735-d161-4d44-bbe7-9adc256430bb","at":"2026-01-17T09:19:29Z","kind":"release","tags":["cli","ruby"],"message":"Shipped v0.1.0","meta":{}}
+{"id":"4cded832-bcd9-4b5a-94d4-9749ad3100a0","at":"2026-01-17T09:16:30Z","kind":"release","tags":["cli","ruby"],"message":"Shipped v0.1.0","meta":{}}

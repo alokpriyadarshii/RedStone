@@ -1,0 +1,12 @@
+/.bundle/
+/vendor/bundle/
+/.ruby-gemset
+/.ruby-version.local
+/coverage/
+/tmp/
+*.gem
+*.rbc
+*.swp
+*.swo
+.DS_Store
+.env
