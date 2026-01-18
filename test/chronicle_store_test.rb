@@ -34,6 +34,13 @@ class ChronicleStoreTest < Minitest::Test
     end
   end
 
+    def test_search_rejects_blank_query
+    with_tmp_store do |store|
+      store.add!(Chronicle::Entry.build(message: "Ship it", tags: ["release"]))
+      assert_raises(Chronicle::UserError) { store.search("   ", limit: 10) }
+    end
+  end
+
   def test_export_jsonl
     with_tmp_store do |store|
       store.add!(Chronicle::Entry.build(message: "one"))
@@ -44,6 +51,15 @@ class ChronicleStoreTest < Minitest::Test
       assert out.lines.count >= 2
     end
   end
+
+  def test_export_accepts_case_insensitive_format
+    with_tmp_store do |store|
+      store.add!(Chronicle::Entry.build(message: "one"))
+      out = store.export(format: "JSONL")
+      assert_includes out, "\"message\":\"one\""
+    end
+  end
+
 
   def test_filters
     with_tmp_store do |store|
