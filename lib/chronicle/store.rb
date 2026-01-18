@@ -2,7 +2,7 @@
 
 module Chronicle
   class Store
-    CONFIG_FILE = "config.yml"
+    CONFIG_FILE = 'config.yml'
 
     attr_reader :dir
 
@@ -10,9 +10,9 @@ module Chronicle
       @dir = File.expand_path(dir)
     end
 
-    def init!(timezone: "UTC")
+    def init!(timezone: 'UTC')
       Util.ensure_dir(entries_dir)
-      write_config!("timezone" => timezone)
+      write_config!('timezone' => timezone)
       true
     end
 
@@ -20,10 +20,14 @@ module Chronicle
       ensure_initialized!
       path = entries_path_for(entry.at)
       Util.ensure_dir(File.dirname(path))
-      File.open(path, "ab") do |f|
+      File.open(path, 'ab') do |f|
         f.write(entry.to_json_line)
         f.flush
-        f.fsync rescue nil
+        begin
+          f.fsync
+        rescue StandardError
+          nil
+        end
       end
       entry
     end
@@ -42,19 +46,24 @@ module Chronicle
     def search(query, limit: 50, kind: nil, tag: nil)
       ensure_initialized!
       q = query.to_s.strip
-      raise UserError, "query cannot be empty" if q.empty?
+      raise UserError, 'query cannot be empty' if q.empty?
+
       rx = begin
         Regexp.new(q, Regexp::IGNORECASE)
       rescue RegexpError
         Regexp.new(Regexp.escape(q), Regexp::IGNORECASE)
       end
       limit = normalize_limit(limit)
-      
+
       enum_entries
         .lazy
         .select { |e| kind.nil? || e.kind == kind }
         .select { |e| tag.nil? || e.tags.include?(tag) }
-        .select { |e| e.message.match?(rx) || e.tags.any? { |t| t.match?(rx) } || e.meta.any? { |k, v| k.to_s.match?(rx) || v.to_s.match?(rx) } }
+        .select do |e|
+          e.message.match?(rx) || e.tags.any? { |t| t.match?(rx) } || e.meta.any? do |k, v|
+            k.to_s.match?(rx) || v.to_s.match?(rx)
+          end
+      end
         .then { |enum| limit ? enum.take(limit) : enum }
         .to_a
     end
@@ -67,7 +76,7 @@ module Chronicle
 
       fmt = format.to_s.downcase
       case fmt
-      when "json"
+      when 'json'
         JSON.generate(entries.map(&:to_h))
       when :jsonl
         entries.map(&:to_json_line).join
@@ -79,7 +88,7 @@ module Chronicle
     def config
       @config ||= begin
         path = File.join(dir, CONFIG_FILE)
-        YAML.safe_load(File.read(path), permitted_classes: [Time], aliases: false) || {}
+        YAML.safe_load_file(path, permitted_classes: [Time], aliases: false) || {}
       rescue Errno::ENOENT
         raise ConfigError, "Missing config. Run 'chronicle init'."
       end
@@ -88,7 +97,7 @@ module Chronicle
     private
 
     def entries_dir
-      File.join(dir, "entries")
+      File.join(dir, 'entries')
     end
 
     def ensure_initialized!
@@ -103,12 +112,12 @@ module Chronicle
 
     def entries_path_for(iso8601_at)
       t = Time.iso8601(iso8601_at).utc
-      File.join(entries_dir, t.strftime("%Y-%m") + ".jsonl")
+      File.join(entries_dir, "#{t.strftime('%Y-%m')}.jsonl")
     end
 
     def enum_entries
       # newest first: iterate files in reverse chronological order
-      files = Dir[File.join(entries_dir, "*.jsonl")].sort.reverse
+      files = Dir[File.join(entries_dir, '*.jsonl')].reverse
 
       Enumerator.new do |y|
         files.each do |file|
@@ -117,6 +126,7 @@ module Chronicle
           lines = File.readlines(file, chomp: true)
           lines.reverse_each do |line|
             next if line.strip.empty?
+
             y << Entry.from_json_line(line)
           end
         end
@@ -124,14 +134,16 @@ module Chronicle
     rescue Errno::ENOENT
       [].to_enum
     end
-    
+
     def normalize_limit(limit)
       return nil if limit.nil?
+
       limit = Integer(limit)
-      raise UserError, "limit must be a positive integer" if limit <= 0
+      raise UserError, 'limit must be a positive integer' if limit <= 0
+
       limit
     rescue ArgumentError, TypeError
-      raise UserError, "limit must be a positive integer"
+      raise UserError, 'limit must be a positive integer'
     end
   end
 end

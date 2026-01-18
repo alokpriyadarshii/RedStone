@@ -1,9 +1,11 @@
+inherit_from: .rubocop_todo.yml
+
 require:
   - rubocop-minitest
 
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.1
+  TargetRubyVersion: 3.2
   Exclude:
     - "vendor/**/*"
 
