@@ -41,7 +41,8 @@ module Chronicle
 
     def search(query, limit: 50, kind: nil, tag: nil)
       ensure_initialized!
-      q = query.to_s
+      q = query.to_s.strip
+      raise UserError, "query cannot be empty" if q.empty?
       rx = begin
         Regexp.new(q, Regexp::IGNORECASE)
       rescue RegexpError
@@ -64,8 +65,9 @@ module Chronicle
       entries = enum_entries
       entries = entries.take(limit) if limit
 
-      case format.to_sym
-      when :json
+      fmt = format.to_s.downcase
+      case fmt
+      when "json"
         JSON.generate(entries.map(&:to_h))
       when :jsonl
         entries.map(&:to_json_line).join
