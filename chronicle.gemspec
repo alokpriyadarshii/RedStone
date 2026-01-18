@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = "Chronicle is a tiny, dependency-free journal library with a practical CLI."
   spec.homepage      = "https://example.com/chronicle"
   spec.license       = "MIT"
-  spec.required_ruby_version = ">= 3.1"
+  spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["rubygems_mfa_required"] = "true"
 
