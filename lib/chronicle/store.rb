@@ -48,17 +48,19 @@ module Chronicle
         Regexp.new(Regexp.escape(q), Regexp::IGNORECASE)
       end
       limit = normalize_limit(limit)
+      
       enum_entries
         .lazy
         .select { |e| kind.nil? || e.kind == kind }
         .select { |e| tag.nil? || e.tags.include?(tag) }
-        .select { |e| e.message.match?(rx) || e.tags.any? { |t| t.match?(rx) } || e.meta.any? { |k, v| k.match?(rx) || v.to_s.match?(rx) } }
-        .take(limit)
+        .select { |e| e.message.match?(rx) || e.tags.any? { |t| t.match?(rx) } || e.meta.any? { |k, v| k.to_s.match?(rx) || v.to_s.match?(rx) } }
+        .then { |enum| limit ? enum.take(limit) : enum }
         .to_a
     end
 
     def export(format: :json, limit: nil)
       ensure_initialized!
+      limit = normalize_limit(limit)
       entries = enum_entries
       entries = entries.take(limit) if limit
 
@@ -119,6 +121,15 @@ module Chronicle
       end
     rescue Errno::ENOENT
       [].to_enum
+    end
+    
+    def normalize_limit(limit)
+      return nil if limit.nil?
+      limit = Integer(limit)
+      raise UserError, "limit must be a positive integer" if limit <= 0
+      limit
+    rescue ArgumentError, TypeError
+      raise UserError, "limit must be a positive integer"
     end
   end
 end
