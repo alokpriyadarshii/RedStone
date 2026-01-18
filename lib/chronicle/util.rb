@@ -40,6 +40,8 @@ module Chronicle
 
       pairs.each_with_object({}) do |pair, acc|
         k, v = pair.split("=", 2)
+        k = k&.strip
+        v = v&.strip
         raise UserError, "Invalid meta '#{pair}'. Use key=value." if k.nil? || k.empty? || v.nil?
         acc[k] = v
       end
