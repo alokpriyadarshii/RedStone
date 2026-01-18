@@ -30,11 +30,12 @@ module Chronicle
 
     def list(limit: 50, kind: nil, tag: nil)
       ensure_initialized!
+      limit = normalize_limit(limit)
       enum_entries
         .lazy
         .select { |e| kind.nil? || e.kind == kind }
         .select { |e| tag.nil? || e.tags.include?(tag) }
-        .take(limit)
+        .then { |enum| limit ? enum.take(limit) : enum }
         .to_a
     end
 
@@ -46,7 +47,7 @@ module Chronicle
       rescue RegexpError
         Regexp.new(Regexp.escape(q), Regexp::IGNORECASE)
       end
-
+      limit = normalize_limit(limit)
       enum_entries
         .lazy
         .select { |e| kind.nil? || e.kind == kind }
