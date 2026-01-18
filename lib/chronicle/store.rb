@@ -78,7 +78,7 @@ module Chronicle
       case fmt
       when 'json'
         JSON.generate(entries.map(&:to_h))
-      when :jsonl
+      when 'jsonl'
         entries.map(&:to_json_line).join
       else
         raise UserError, "Unknown export format '#{format}'. Use json or jsonl."
