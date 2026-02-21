@@ -1,4 +1,4 @@
-# Redstone
+# Red-stone
 
 set -euo pipefail
 
