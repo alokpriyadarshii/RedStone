@@ -4,7 +4,7 @@ require_relative 'test_helper'
 
 class ChronicleStoreTest < Minitest::Test
   def with_tmp_store
-    Dir.mktmpdir do |dir| -> null
+    Dir.mktmpdir do |dir| 
       store = Chronicle::Store.new(dir: dir)
       store.init!
       yield store
